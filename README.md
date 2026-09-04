@@ -1,8 +1,7 @@
-# 🤖 MegAI — Enterprise Natural Language Analytics
+# MegAI — Enterprise Natural Language Analytics
 
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=240&text=MegAI&fontSize=60&fontColor=ffffff&animation=fadeIn" alt="MegAI Header" />
-  
+
   <p align="center">
     <b>A Production-Grade Generative BI Platform Powered by LangGraph & Multi-Agent Orchestration</b>
   </p>
@@ -25,32 +24,33 @@
 
 ---
 
-## 📑 **Table of Contents**
-- [📍 Live Demo](#-live-demo)
-- [📖 Overview](#-overview)
-- [🖼️ System Architecture](#️-system-architecture)
-- [🕸️ The RAG Layer](#️-the-rag-layer)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [🚀 Key Features](#-key-features)
-- [⚙️ Installation](#️-installation--setup)
-- [🔌 API](#-api)
-- [☁️ Deployment](#️-deployment)
-- [⚠️ Known Limitations](#️-known-limitations)
-- [📄 License](#-license)
-- [📞 Contact](#-contact--support)
+## Table of Contents
+
+- [Live Demo](#live-demo)
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [The RAG Layer](#the-rag-layer)
+- [Tech Stack](#tech-stack)
+- [Key Features](#key-features)
+- [Installation & Setup](#installation--setup)
+- [API](#api)
+- [Deployment](#deployment)
+- [Known Limitations](#known-limitations)
+- [License](#license)
+- [Contact](#contact)
 
 ---
 
-## 🌐🎬 Live Demo
-🚀 **Try it locally:**
+## Live Demo
 
-No hosted demo is deployed yet — see [Installation & Setup](#️-installation--setup)
-to run it on your own machine in a couple of minutes.
+**[agenticbi.streamlit.app](https://agenticbi.streamlit.app/)**
 
+Upload a spreadsheet and ask a question in plain English — no setup required.
+To run it on your own machine instead, see [Installation & Setup](#installation--setup).
 
 ---
 
-## 📖 **Overview**
+## Overview
 
 **Agentic BI** turns a spreadsheet into a conversation. Upload an Excel or CSV
 file and ask questions about it in plain English — *"which department overspent
@@ -64,7 +64,7 @@ works on your data on the first run with no setup.
 
 ---
 
-## 🖼️ **System Architecture**
+## System Architecture
 
 ```
   upload .xlsx / .csv                    optional: business glossary
@@ -112,7 +112,7 @@ is bounded by an attempt budget, so the graph always terminates.
 
 ---
 
-## 🕸️ **The RAG layer**
+## The RAG layer
 
 Two retrievers, because they answer different questions.
 
@@ -164,7 +164,7 @@ requirement, so it is not a hard dependency.
 
 ---
 
-## 🛠️ **Tech Stack**
+## Tech Stack
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
@@ -181,9 +181,10 @@ requirement, so it is not a hard dependency.
 
 ---
 
-## 🚀 **Key Features**
+## Key Features
 
 ### 1. Bring your own spreadsheet
+
 Upload `.xlsx`, `.xlsm`, `.xls`, or `.csv` - or a `.zip` of several of them for
 a large export. Every file becomes one or more sheets the agents can query and
 join across, the same way multiple Excel tabs would. Column names are
@@ -192,37 +193,43 @@ safely, and a zip is decompressed under a hard byte cap that holds even if the
 archive's own size metadata is wrong - not just a check on paper.
 
 ### 2. Retrieval-grounded generation
+
 Certified definitions and past successful analyses are retrieved before any code
 is written, and the response shows exactly what was retrieved and why it matched.
 
 ### 3. Self-healing pipeline
+
 Three different failure modes route back to the Analysis Agent with the reason
 attached, capped by an attempt budget. When the budget is spent the BI Agent
 reports the failure and the code that caused it — it does not invent a result.
 
 ### 4. Governance that actually runs
+
 The Impact Agent blocks imports, `open`, `eval`/`exec`, `getattr`, dunder
 attribute access, `to_csv`/`to_sql`/`read_*`, and anything else that would reach
 outside the DataFrames. Rejected code never reaches the Execute Agent.
 
 ### 5. Honest metrics
+
 KPIs are computed from the returned rows. The period-over-period change appears
 only when the result contains an ordered time column; otherwise the card reads
 `N/A`, not a placeholder percentage. When the Critic has a reservation it is
 shown next to the result rather than hidden.
 
 ### 6. Transparent reasoning
+
 Every answer ships with the pandas code that produced it, the plan it followed,
 and the retrieved context it was grounded on — downloadable as `.py` and `.csv`.
 
-
-## ⚙️ **Installation & Setup**
+## Installation & Setup
 
 ### Prerequisites
+
 - Python 3.11+
 - A [Groq API key](https://console.groq.com) (free tier works)
 
 ### 1. Clone and install
+
 ```bash
 git clone https://github.com/meghapatel21/agentic-bi-natural-language-querying.git
 cd agentic-bi-natural-language-querying
@@ -230,6 +237,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. Configure
+
 ```bash
 cp .env.example .env
 # then set GROQ_API_KEY in .env
@@ -274,6 +282,7 @@ CSV (or a zipped CSV) avoids the Excel parser entirely and is the fastest way
 to load a large export.
 
 ### 4. Run the tests
+
 ```bash
 pip install pytest
 pytest
@@ -286,7 +295,7 @@ key or network access is needed.
 
 ---
 
-## 🔌 **API**
+## API
 
 ```http
 POST /upload                          multipart  ->  { dataset_id, filename, profile }
@@ -310,12 +319,14 @@ curl -X POST http://localhost:8000/ask -H "Content-Type: application/json"      
 
 ---
 
-## ☁️ **Deployment**
+## Deployment
 
-**Free hosting:** see **[DEPLOY_HF_SPACES.md](DEPLOY_HF_SPACES.md)** — Hugging
-Face Spaces builds the `Dockerfile` in this repo as-is, needs no credit card,
-and has the most memory of the free tiers, which is the resource this app is
-actually short of.
+**Live deployment:** the app runs on Streamlit Community Cloud at
+[agenticbi.streamlit.app](https://agenticbi.streamlit.app/), deployed from this
+repository with `ui/presentation_app.py` as the entry point and `GROQ_API_KEY`
+supplied as a platform secret. Streamlit runs the frontend only; the agents
+execute in-process, which the app falls back to automatically when the FastAPI
+backend is unreachable.
 
 **Azure:** see **[AZURE_DEPLOY.md](AZURE_DEPLOY.md)** for Container Apps and App
 Service recipes, including the one setting that matters most:
@@ -332,7 +343,7 @@ docker run -p 8501:8501 -p 8000:8000 --env-file .env agentic-bi
 
 ---
 
-## ⚠️ **Known limitations**
+## Known limitations
 
 - **No execution timeout.** The Impact Agent blocks unsafe *operations*, but a
   pathological join on a large sheet can still occupy a worker.
@@ -351,62 +362,18 @@ docker run -p 8501:8501 -p 8000:8000 --env-file .env agentic-bi
 - **The screenshots and demo GIF need retaking.** They showed the older
   SQL-backed interface and were removed in the Excel-upload rewrite.
 
+## License
 
-## 📄 **License & Attribution**
-
-Distributed under the **Apache 2.0 License**. See `LICENSE` for more information.
-
-This project began as a fork of
-[Ratnesh-181998/agentic-bi-natural-language-querying](https://github.com/Ratnesh-181998/agentic-bi-natural-language-querying),
-and has since been substantially rewritten: the SQL/database layer was replaced
-with spreadsheet upload and generated pandas, the agent graph was rebuilt around
-a 10-node LangGraph pipeline with a bounded reflexion loop, and the RAG,
-profiling, charting and safety layers were added. The original Apache-2.0
-licence is retained above.
-
+Distributed under the Apache 2.0 License. See `LICENSE` for details.
 
 ---
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=24,20,12,6&height=3" width="100%">
+## Contact
 
+Megha Patel
 
-# 📞 **CONTACT & NETWORKING** 📞
-
-
-## 💼 Professional Networks
-
-[![LinkedIn](https://img.shields.io/badge/💼_LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/meghapatel21)
-[![GitHub](https://img.shields.io/badge/🐙_GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/meghapatel21)
-[![Email](https://img.shields.io/badge/✉️_Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:patelmegha1726@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/meghapatel21)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/meghapatel21)
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white)](mailto:patelmegha1726@gmail.com)
 
 ---
-
-## 📊 **GitHub Stats & Metrics** 📊
-
-
-
-![Profile Views](https://komarev.com/ghpvc/?username=meghapatel21&color=blueviolet&style=for-the-badge&label=PROFILE+VIEWS)
-
-
-
-
-
-<img 
-  src="https://streak-stats.demolab.com?user=meghapatel21&theme=radical&hide_border=true&background=0D1117&stroke=4ECDC4&ring=F38181&fire=FF6B6B&currStreakLabel=4ECDC4"
-  alt="GitHub Streak Stats"
-width="48%"/>
-
-
-<img src="https://github-readme-activity-graph.vercel.app/graph?username=meghapatel21&theme=react-dark&hide_border=true&bg_color=0D1117&color=4ECDC4&line=F38181&point=FF6B6B" width="48%" />
-
----
-
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=24&duration=3000&pause=1000&color=4ECDC4&center=true&vCenter=true&width=600&lines=Megha+Patel" alt="Typing SVG" />
-
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=18&duration=2000&pause=1000&color=F38181&center=true&vCenter=true&width=600&lines=Built+with+passion+for+the+AI+Community+🚀;Innovating+the+Future+of+AI+%26+ML;MLOps+%7C+LLMOps+%7C+AIOps+%7C+GenAI+%7C+AgenticAI+Excellence" alt="Footer Typing SVG" />
-
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer" width="100%">
-
-    
-  
