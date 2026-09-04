@@ -48,6 +48,25 @@
 Upload a spreadsheet and ask a question in plain English — no setup required.
 To run it on your own machine instead, see [Installation & Setup](#installation--setup).
 
+**The platform** — upload any Excel, CSV or zip; every sheet becomes a table the
+agents can query and join across.
+
+![MegAI Platform](Deployment_Screenshots/MegAI%20Platform.png)
+
+**Ask a question** — plain English, with follow-ups that keep the earlier context.
+
+![Chatbot](Deployment_Screenshots/Chatbot.png)
+
+**MegAI Intelligence** — the interpreted question, the source sheet, the
+governance verdict and the narrative written over verified numbers.
+
+![MegAI Intelligence](Deployment_Screenshots/MegAI%20Intelligence.png)
+
+**Visualization** — KPIs, the requested chart type and the result table, with the
+generated pandas one expander away.
+
+![Visualization](Deployment_Screenshots/Visualization.png)
+
 ---
 
 ## Overview
