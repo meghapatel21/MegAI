@@ -1,6 +1,6 @@
 # Single image running both the FastAPI backend and the Streamlit frontend.
-# For Azure Container Apps you will usually split these into two containers so
-# they scale independently - see AZURE_DEPLOY.md.
+# On a platform that scales them independently you would usually split these
+# into two containers and point the frontend at the backend with BACKEND_URL.
 
 FROM python:3.11-slim
 

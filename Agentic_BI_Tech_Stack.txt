@@ -109,7 +109,7 @@ auditing that code, and running it in a restricted namespace.
 - pyflakes           : lint step in CI.
 - Docker             : one image, two entry points (API and UI).
 - GitHub Actions     : .github/workflows/ci.yml - lint, test, build image.
-- Azure Container Apps / App Service : see AZURE_DEPLOY.md.
+- Deployed on Streamlit Community Cloud: agenticbi.streamlit.app
 
 9. ARCHITECTURE STYLE
 ---------------------

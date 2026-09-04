@@ -335,12 +335,12 @@ supplied as a platform secret. Streamlit runs the frontend only; the agents
 execute in-process, which the app falls back to automatically when the FastAPI
 backend is unreachable.
 
-**Azure:** see **[AZURE_DEPLOY.md](AZURE_DEPLOY.md)** for Container Apps and App
-Service recipes, including the one setting that matters most:
-
-> `STORAGE_BACKEND=local` keeps uploads on the instance's disk. With two or more
-> replicas an upload can land on one instance and the follow-up question on
-> another. Set `STORAGE_BACKEND=azure` before scaling out.
+**Scaling out.** `STORAGE_BACKEND=local` keeps uploads on the instance's own
+disk. With two or more replicas an upload can land on one instance and the
+follow-up question on another, which fails with `404 Dataset not found`. Set
+`STORAGE_BACKEND=azure` (Azure Blob) before scaling past a single instance —
+`app/storage/dataset_store.py` implements both behind the same interface, and
+every setting is documented in `.env.example`.
 
 **Docker:** one image runs both processes — FastAPI on 8000, Streamlit on 8501.
 
