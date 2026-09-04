@@ -152,11 +152,18 @@ never learns from code the Critic rejected.
 
 ### Embeddings are pluggable
 
-| Backend | Cost | Image size | Notes |
-| :-- | :-- | :-- | :-- |
-| `fastembed` *(default)* | free | ~200 MB | BAAI/bge-small-en-v1.5 on ONNX. No torch, no API key. |
-| `azure` | ~$0.02/1M tokens | ~200 MB | Azure OpenAI `text-embedding-3-small`. |
-| `hashing` | free | 0 | Character n-gram hashing. No downloads at all; weaker recall. Used by the test suite. |
+Set with `EMBEDDING_BACKEND`. All three produce L2-normalised vectors, so the
+index and the retrieval thresholds behave the same whichever you choose.
+
+| Backend | Dim | Cost | Download | Notes |
+| :-- | :--: | :-- | :-- | :-- |
+| `fastembed` *(default)* | 384 | free | ~200 MB model | BAAI/bge-small-en-v1.5 on ONNX Runtime. No torch, no API key, no per-query cost. |
+| `azure` | 1536 | ~$0.02 / 1M tokens | none | Azure OpenAI `text-embedding-3-small`. Keeps the model out of the container entirely — needs `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_API_KEY`, and the `openai` package (commented out in `requirements.txt`). |
+| `hashing` | 512 | free | none | Deterministic character n-gram hashing with sublinear term weighting. Zero dependencies, weaker recall. What the test suite runs on. |
+
+On the hosted deployment the fastembed model is fetched on the first query, so
+the very first question after a cold start is slower than the rest. The
+`Dockerfile` bakes the model into the image to avoid that when self-hosting.
 
 The vector index uses FAISS when it is installed and falls back to brute-force
 cosine in NumPy otherwise — at this corpus size FAISS is an optimisation, not a
@@ -335,10 +342,22 @@ Service recipes, including the one setting that matters most:
 > replicas an upload can land on one instance and the follow-up question on
 > another. Set `STORAGE_BACKEND=azure` before scaling out.
 
-**Docker:**
+**Docker:** one image runs both processes — FastAPI on 8000, Streamlit on 8501.
+
 ```bash
-docker build -t agentic-bi .
-docker run -p 8501:8501 -p 8000:8000 --env-file .env agentic-bi
+docker build -t megai .
+docker run -p 8501:8501 -p 8000:8000 --env-file .env megai
+```
+
+**Sizing.** Every question runs generated pandas against the sheet held fully in
+memory, so RAM — not CPU — is the ceiling. The defaults assume a roomy
+container; on a small host lower them rather than letting the first large upload
+exhaust it:
+
+```bash
+MAX_UPLOAD_BYTES=100000000
+MAX_ZIP_UNCOMPRESSED_BYTES=300000000
+MAX_ROWS_PER_SHEET=1000000
 ```
 
 ---
