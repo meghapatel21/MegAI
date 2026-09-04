@@ -1,0 +1,35 @@
+# Version control / CI
+.git
+.gitignore
+.gitattributes
+.github
+
+# Python artefacts
+__pycache__
+*.pyc
+venv
+.venv
+.pytest_cache
+
+# Secrets - the image must never carry a real key
+.env
+
+# Runtime state, recreated by the app inside the container
+datasets/
+memories/
+temp_mem/
+rag_store/
+*.sqlite
+*.db
+*.parquet
+*.log
+
+# Local-only tooling
+.claude
+sample_data/
+generate_architecture_diagram.py
+
+# NOTE: image files are deliberately NOT excluded wholesale. The UI reads
+# Logo/icons8-hammerstein-100.png (header, sidebar, favicon) and
+# agentic_bi_architecture.jpeg (Architecture tab) at runtime; a blanket
+# *.png / *.jpeg rule silently shipped an image with broken graphics.

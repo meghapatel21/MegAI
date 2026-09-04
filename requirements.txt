@@ -1,0 +1,47 @@
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.27,<1.0
+python-multipart>=0.0.9
+pydantic>=2.6,<3.0
+
+streamlit>=1.33,<2.0
+pandas>=2.1,<3.0
+numpy>=1.26,<3.0
+plotly>=5.20,<7.0
+requests>=2.31,<3.0
+
+# Excel readers: openpyxl for .xlsx/.xlsm, xlrd for legacy .xls
+openpyxl>=3.1,<4.0
+xlrd>=2.0,<3.0
+
+# Optional: a much faster .xlsx reader. openpyxl is pure Python and reads
+# roughly 100k rows a second, which dominates the upload time of any sizeable
+# workbook; calamine is used automatically when importable. Left commented
+# because it ships a compiled extension, which some machine policies block.
+# python-calamine>=0.2
+# Parquet round-trip for the dataset store
+pyarrow>=15.0
+
+langgraph>=0.2,<1.0
+langchain-groq>=0.1,<1.0
+mem0ai>=0.1,<1.0
+# Mem0's cross-session memory additionally needs sentence-transformers,
+# deliberately NOT pinned here: it pulls in torch and roughly doubles the
+# Docker image. Without it mem0_client degrades to a no-op and the app
+# runs normally - the RAG glossary and query memory are unaffected.
+# Uncomment to enable cross-session memory:
+# sentence-transformers>=3.0
+python-dotenv>=1.0,<2.0
+
+# RAG embeddings. fastembed runs BAAI/bge-small-en-v1.5 on ONNX - no torch,
+# no API key, ~200MB. Set EMBEDDING_BACKEND=hashing to drop this dependency
+# entirely (lower retrieval quality, zero downloads).
+fastembed>=0.3,<1.0
+
+# Optional: accelerates vector search. The index falls back to NumPy
+# brute-force without it, which is fine at this corpus size.
+# faiss-cpu>=1.8
+
+# Uncomment for STORAGE_BACKEND=azure
+# azure-storage-blob>=12.19,<13.0
+# Uncomment for EMBEDDING_BACKEND=azure
+# openai>=1.30

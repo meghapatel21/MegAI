@@ -1,0 +1,118 @@
+MegAI - TECH STACK DOCUMENTATION
+===============================================
+Author:   Megha Patel  <patelmegha1726@gmail.com>
+GitHub:   github.com/meghapatel21
+LinkedIn: linkedin.com/in/meghapatel21
+Repo:     github.com/meghapatel21/agentic-bi-natural-language-querying
+
+Every entry below is something the code actually imports and runs. There is no
+SQL engine, no ORM, no billing gateway and no RBAC layer in this project: a
+question is answered by generating pandas against an uploaded spreadsheet,
+auditing that code, and running it in a restricted namespace.
+
+
+1. CORE LANGUAGE & BACKEND
+---------------------------
+- Python 3.11+       : primary language.
+- FastAPI            : REST API - /upload, /ask, /datasets/{id},
+                       /datasets/{id}/overview, /datasets/{id}/glossary, /health.
+- Uvicorn            : ASGI server for FastAPI.
+- Pydantic           : request/response models.
+
+2. FRONTEND (Presentation Layer)
+----------------------------------
+- Streamlit          : upload, chat, glossary editor, schema view, agent logs.
+                       Falls back to invoking the agents in-process when the
+                       backend is unreachable, so a single-terminal run works.
+- Plotly             : charts. Chart data uses a general-purpose qualitative
+                       palette; the brand red is reserved for UI chrome.
+- Custom CSS/HTML    : black / red / white theme.
+
+3. AI, AGENTS & MEMORY
+----------------------
+- LangGraph          : the orchestrator. A 10-node graph with three conditional
+                       "reflexion" edges (Impact, Execute, Critic) that can send
+                       work back to the Analysis Agent with the exact failure
+                       attached, bounded by MAX_ANALYSIS_ATTEMPTS.
+- LangChain (langchain-groq)
+                     : the Groq chat client and per-agent prompt construction.
+- Mem0 (+ Qdrant)    : cross-session memory. DORMANT unless you install
+                       sentence-transformers - mem0_client configures a
+                       HuggingFace embedder that needs it, and it is kept out
+                       of requirements.txt because it pulls in torch (roughly
+                       doubles the Docker image). Without it the app logs
+                       "[MEMORY] Mem0 unavailable" and runs normally. The RAG
+                       glossary and query memory are separate and always on.
+
+   The 10 pipeline agents, in execution order:
+     1. Profile Agent   - profiles every sheet; rewrites the question against
+                          the real column names.
+     2. Clarify Agent   - asks back only when a question is genuinely ambiguous.
+     3. RAG Agent       - retrieves glossary definitions and similar past
+                          analyses.
+     4. Planner Agent   - splits compound questions into ordered steps.
+     5. Analysis Agent  - generates the pandas that answers the question.
+     6. Impact Agent    - AST audit; blocks imports, file/network access and
+                          dunder escapes before anything executes.
+     7. Execute Agent   - runs approved code in a restricted namespace.
+     8. Critic Agent    - verifies the result actually answers the question.
+     9. Insight Agent   - writes the narrative over verified numbers.
+    10. BI Agent        - assembles KPIs, chart spec and the final response.
+
+   Overview Agent runs outside the graph, once per upload, to produce the
+   briefing shown as soon as a file lands.
+
+4. LLM INFERENCE
+----------------
+- Groq, model "openai/gpt-oss-120b" (see app/config.py, override with
+  GROQ_MODEL). Without an API key the app still runs; the Analysis Agent
+  returns a preview of the sheet instead of a generated analysis.
+
+5. RETRIEVAL (RAG)
+------------------
+- fastembed          : local ONNX embeddings (BAAI/bge-small-en-v1.5). No API
+                       key, no per-query cost. EMBEDDING_BACKEND=hashing drops
+                       the dependency entirely; "azure" uses Azure OpenAI.
+- Vector index       : app/rag/vector_index.py. Uses FAISS when installed and
+                       falls back to NumPy brute force otherwise, which is fine
+                       at this corpus size.
+- Two retrievers     : a curated business glossary (hybrid exact + semantic)
+                       and a self-populating query memory that only ever
+                       records analyses the Critic accepted.
+
+6. DATA & STORAGE
+-----------------
+- pandas / NumPy     : all analysis runs in memory.
+- pyarrow / Parquet  : uploaded sheets are normalised to Parquet on upload, so
+                       every later question is a cheap typed read.
+- openpyxl / xlrd    : .xlsx/.xlsm and legacy .xls readers.
+- python-calamine    : OPTIONAL. Much faster .xlsx reader, used automatically
+                       when importable.
+- Storage backends   : local disk, or Azure Blob (STORAGE_BACKEND=azure) behind
+                       one interface with four methods.
+- python-dotenv      : environment configuration.
+
+7. SAFETY & LIMITS
+------------------
+- Python `ast`       : static audit of every generated script before execution.
+- Restricted exec    : sheets are in-memory DataFrames; nothing is written back.
+- Upload guardrails  : MAX_UPLOAD_BYTES, MAX_ROWS_PER_SHEET, MAX_ZIP_MEMBERS and
+                       MAX_ZIP_UNCOMPRESSED_BYTES. Zip members are decompressed
+                       in bounded chunks, so the cap holds even when the
+                       archive's own size metadata lies (zip-bomb defence).
+
+8. TESTING & DEVOPS
+-------------------
+- pytest             : 178 tests covering the governance gate, dataset store,
+                       zip handling, RAG retrieval, chart intent and the
+                       reflexion loop. No API key or network needed.
+- pyflakes           : lint step in CI.
+- Docker             : one image, two entry points (API and UI).
+- GitHub Actions     : .github/workflows/ci.yml - lint, test, build image.
+- Azure Container Apps / App Service : see AZURE_DEPLOY.md.
+
+9. ARCHITECTURE STYLE
+---------------------
+- Multi-agent system orchestrated as a deterministic state graph.
+- Retrieval-grounded generation.
+- Bounded self-correction (reflexion) rather than unbounded retry.

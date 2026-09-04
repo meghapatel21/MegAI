@@ -1,0 +1,18 @@
+# MegAI - Streamlit configuration.
+# The palette here is the app's black/red/white identity. Note it does
+# NOT drive chart colours: charts pass theme=None to st.plotly_chart and
+# carry their own general-purpose palette (see ui/render_utils.py).
+
+[theme]
+base='dark'
+primaryColor='#E50914'
+backgroundColor='#0A0A0A'
+secondaryBackgroundColor='#141414'
+textColor='#FFFFFF'
+
+[server]
+# Streamlit's own upload widget caps at 200MB by default, independent of the
+# app's MAX_UPLOAD_BYTES check - without this, a file under the app's own
+# limit can still get silently rejected by Streamlit before it ever reaches
+# the backend. Kept in step with MAX_UPLOAD_BYTES below.
+maxUploadSize = 500
